@@ -372,6 +372,8 @@ func migrateSettingsToSecureSettings(chanType string, settings *simplejson.Json,
 		keys = []string{"apiToken", "userKey"}
 	case "threema":
 		keys = []string{"api_secret"}
+	case "webex":
+		keys = []string{"api_secret"}
 	}
 
 	newSecureSettings := secureSettings.Decrypt()

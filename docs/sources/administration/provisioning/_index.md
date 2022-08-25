@@ -792,6 +792,19 @@ settings:
   maxAlerts: '10'
 ```
 
+##### Webex
+
+```yaml
+type: webex
+settings:
+  # <string, required>
+  api_secret: xxx
+  # <string, required>
+  url: https://api.ciscospark.com/v1/messages
+  # <string, required>
+  room_id: xxxx
+```
+
 ##### WeCom
 
 ```yaml
@@ -1175,6 +1188,14 @@ The following sections detail the supported settings and secure settings for eac
 | httpMethod |                |
 | username   |                |
 | password   | yes            |
+
+#### Alert notification `webex`
+
+| Name       | Secure setting |
+| ---------- | -------------- |
+| url        |                |
+| room_id    |                |
+| api_secret | yes            |
 
 #### Alert notification `googlechat`
 

@@ -64,6 +64,7 @@ var receiverFactories = map[string]func(FactoryConfig) (NotificationChannel, err
 	"threema":                 ThreemaFactory,
 	"victorops":               VictorOpsFactory,
 	"webhook":                 WebHookFactory,
+	"webex":                   WebexFactory,
 	"wecom":                   WeComFactory,
 }
 

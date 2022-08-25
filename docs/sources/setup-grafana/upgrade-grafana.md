@@ -278,6 +278,7 @@ The following alert notifiers have been updated to support storing their sensiti
 - LINE (token)
 - Pushover (API Token, User key)
 - Threema Gateway (API Secret)
+- Webex (API Secret)
 
 For existing alert notification channels, there is no automatic migration of storing sensitive settings encrypted, and they will continue to work as before. Migration must be done manually. Opening a configured alert notification channel in the UI and saving it will store sensitive settings encrypted and at the same time reset the historic unencrypted setting of that alert notification channel in the database.
 
