@@ -798,11 +798,9 @@ settings:
 type: webex
 settings:
   # <string, required>
-  api_secret: xxx
-  # <string, required>
-  url: https://api.ciscospark.com/v1/messages
-  # <string, required>
-  room_id: xxxx
+  url: https://webexapis.com/v1/webhooks/incoming/app-id
+  # <string, optional>
+  message: xxxx
 ```
 
 ##### WeCom
@@ -1191,11 +1189,9 @@ The following sections detail the supported settings and secure settings for eac
 
 #### Alert notification `webex`
 
-| Name       | Secure setting |
-| ---------- | -------------- |
-| url        |                |
-| room_id    |                |
-| api_secret | yes            |
+| Name        | Secure setting |
+| ----------- | -------------- |
+| webhook_url |                |
 
 #### Alert notification `googlechat`
 
