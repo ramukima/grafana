@@ -35,9 +35,7 @@ func TestWebexNotifier(t *testing.T) {
 		{
 			name: "A single alert with an image",
 			settings: `{
-				"url": "https://api.ciscospark.com/v1/messages",
-				"room_id": "Y2lzY29z",
-				"api_secret": "supersecret"
+				"webhook_url": "https://api.ciscospark.com/v1/messages"
 			}`,
 			alerts: []*types.Alert{
 				{
@@ -47,14 +45,12 @@ func TestWebexNotifier(t *testing.T) {
 					},
 				},
 			},
-			expMsg:      `{"markdown":"⚠️ [FIRING:1]  (val1)\n\n*Message:*\n**Firing**\n\nValue: [no value]\nLabels:\n - alertname = alert1\n - lbl1 = val1\nAnnotations:\n - ann1 = annv1\nSilence: http://localhost/alerting/silence/new?alertmanager=grafana\u0026matcher=alertname%3Dalert1\u0026matcher=lbl1%3Dval1\nDashboard: http://localhost/d/abcd\nPanel: http://localhost/d/abcd?viewPanel=efgh\n\n*URL:* http:/localhost/alerting/list\n*Image:* https://www.example.com/test-image-1.jpg\n","roomId":"Y2lzY29z"}`,
+			expMsg:      `{"markdown":"⚠️ [FIRING:1]  (val1)\n\n*Message:*\n**Firing**\n\nValue: [no value]\nLabels:\n - alertname = alert1\n - lbl1 = val1\nAnnotations:\n - ann1 = annv1\nSilence: http://localhost/alerting/silence/new?alertmanager=grafana\u0026matcher=alertname%3Dalert1\u0026matcher=lbl1%3Dval1\nDashboard: http://localhost/d/abcd\nPanel: http://localhost/d/abcd?viewPanel=efgh\n\n*URL:* http:/localhost/alerting/list\n*Image:* https://www.example.com/test-image-1.jpg\n"}`,
 			expMsgError: nil,
 		}, {
 			name: "Multiple alerts with images",
 			settings: `{
-				"url": "https://api.ciscospark.com/v1/messages",
-				"room_id": "Y2lzY29z",
-				"api_secret": "supersecret"
+				"webhook_url": "https://webexapis.com/v1/webhooks/incoming/room-id"
 			}`,
 			alerts: []*types.Alert{
 				{
@@ -69,15 +65,8 @@ func TestWebexNotifier(t *testing.T) {
 					},
 				},
 			},
-			expMsg:      `{"markdown":"⚠️ [FIRING:2]  \n\n*Message:*\n**Firing**\n\nValue: [no value]\nLabels:\n - alertname = alert1\n - lbl1 = val1\nAnnotations:\n - ann1 = annv1\nSilence: http://localhost/alerting/silence/new?alertmanager=grafana\u0026matcher=alertname%3Dalert1\u0026matcher=lbl1%3Dval1\n\nValue: [no value]\nLabels:\n - alertname = alert1\n - lbl1 = val2\nAnnotations:\n - ann1 = annv2\nSilence: http://localhost/alerting/silence/new?alertmanager=grafana\u0026matcher=alertname%3Dalert1\u0026matcher=lbl1%3Dval2\n\n*URL:* http:/localhost/alerting/list\n*Image:* https://www.example.com/test-image-1.jpg\n*Image:* https://www.example.com/test-image-2.jpg\n","roomId":"Y2lzY29z"}`,
+			expMsg:      `{"markdown":"⚠️ [FIRING:2]  \n\n*Message:*\n**Firing**\n\nValue: [no value]\nLabels:\n - alertname = alert1\n - lbl1 = val1\nAnnotations:\n - ann1 = annv1\nSilence: http://localhost/alerting/silence/new?alertmanager=grafana\u0026matcher=alertname%3Dalert1\u0026matcher=lbl1%3Dval1\n\nValue: [no value]\nLabels:\n - alertname = alert1\n - lbl1 = val2\nAnnotations:\n - ann1 = annv2\nSilence: http://localhost/alerting/silence/new?alertmanager=grafana\u0026matcher=alertname%3Dalert1\u0026matcher=lbl1%3Dval2\n\n*URL:* http:/localhost/alerting/list\n*Image:* https://www.example.com/test-image-1.jpg\n*Image:* https://www.example.com/test-image-2.jpg\n"}`,
 			expMsgError: nil,
-		}, {
-			name: "No API secret",
-			settings: `{
-				"url": "https://api.ciscospark.com/v1/messages",
-				"room_id": "87654321"
-			}`,
-			expInitError: `could not find Webex API secret in settings`,
 		},
 	}
 

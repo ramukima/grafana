@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/grafana/grafana/pkg/components/simplejson"
 	"github.com/grafana/grafana/pkg/infra/log"
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/services/alerting"
@@ -19,29 +20,19 @@ func init() {
 		Factory:     NewWebexNotifier,
 		Options: []alerting.NotifierOption{
 			{
-				Label:        "URL",
+				Label:        "Cisco Webex Incoming Webhook URL",
 				Element:      alerting.ElementTypeInput,
 				InputType:    alerting.InputTypeText,
-				Placeholder:  "Webex incoming webhook url",
-				PropertyName: "url",
+				Placeholder:  "https://webexapis.com/v1/webhooks/incoming/<room-id>",
+				PropertyName: "webhook_url",
 				Required:     true,
 			},
 			{
-				Label:        "WebexToken",
+				Label:        "Message Content",
+				Description:  "Message content template",
 				Element:      alerting.ElementTypeInput,
 				InputType:    alerting.InputTypeText,
-				Placeholder:  "Webex API Token",
-				PropertyName: "webexToken",
-				Secure:       true,
-				Required:     true,
-			},
-			{
-				Label:        "RoomId",
-				Element:      alerting.ElementTypeInput,
-				InputType:    alerting.InputTypeText,
-				Placeholder:  "Webex Room Id",
-				PropertyName: "roomId",
-				Required:     true,
+				PropertyName: "content",
 			},
 		},
 	})
@@ -49,26 +40,17 @@ func init() {
 
 // NewWebexNotifier is the constructor for Webex notifier.
 func NewWebexNotifier(model *models.AlertNotification, _ alerting.GetDecryptedValueFn, ns notifications.Service) (alerting.Notifier, error) {
-	url := model.Settings.Get("url").MustString()
-	if url == "" {
-		return nil, alerting.ValidationError{Reason: "Could not find url property in settings"}
+	webhookURL := model.Settings.Get("webhook_url").MustString()
+	if webhookURL == "" {
+		return nil, alerting.ValidationError{Reason: "Could not find webhook_url property in settings"}
 	}
 
-	webexApiToken := model.Settings.Get("webexToken").MustString()
-	if webexApiToken == "" {
-		return nil, alerting.ValidationError{Reason: "Could not find webexToken property in settings"}
-	}
-
-	webexRoomId := model.Settings.Get("roomId").MustString()
-	if webexRoomId == "" {
-		return nil, alerting.ValidationError{Reason: "Could not find roomId property in settings"}
-	}
+	content := model.Settings.Get("content").MustString()
 
 	return &WebexNotifier{
 		NotifierBase: NewNotifierBase(model, ns),
-		URL:          url,
-		ApiToken:     webexApiToken,
-		RoomId:       webexRoomId,
+		WebhookURL:   webhookURL,
+		Content:      content,
 		log:          log.New("alerting.notifier.webex"),
 	}, nil
 }
@@ -77,10 +59,9 @@ func NewWebexNotifier(model *models.AlertNotification, _ alerting.GetDecryptedVa
 // alert notifications to Cisco Webex.
 type WebexNotifier struct {
 	NotifierBase
-	URL      string
-	ApiToken string
-	RoomId   string
-	log      log.Logger
+	WebhookURL string
+	Content    string
+	log        log.Logger
 }
 
 // Notify send an alert notification to Cisco Webex.
@@ -105,22 +86,19 @@ func (wn *WebexNotifier) Notify(evalContext *alerting.EvalContext) error {
 		stateEmoji, evalContext.GetNotificationTitle(),
 		evalContext.Rule.Name, evalContext.Rule.Message)
 
-	body := map[string]interface{}{
-		"roomId":   wn.RoomId,
-		"markdown": message,
-	}
+	body := simplejson.New()
 
-	headers := map[string]string{
-		"Authorization": fmt.Sprintf("Bearer %s", wn.ApiToken),
+	if wn.Content != "" {
+		body.Set("markdown", message)
 	}
 
 	data, _ := json.Marshal(&body)
 	cmd := &models.SendWebhookSync{
-		Url:         wn.URL,
+		Url:         wn.WebhookURL,
 		Body:        string(data),
 		ContentType: "application/json; charset=utf-8",
 		HttpMethod:  "POST",
-		HttpHeader:  headers,
+		HttpHeader:  map[string]string{},
 	}
 
 	if err := wn.NotificationService.SendWebhookSync(evalContext.Ctx, cmd); err != nil {

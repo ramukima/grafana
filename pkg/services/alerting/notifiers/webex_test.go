@@ -31,9 +31,7 @@ func TestWebexNotifier(t *testing.T) {
 		t.Run("from settings", func(t *testing.T) {
 			json := `
 				{
-          "url": "https://api.ciscospark.com/v1/messages",
-		  "webexToken": "foo",
-		  "roomId": "bar"
+          "webhook_url": "https://webexapis.com/v1/webhooks/incoming/room-id"
 				}`
 
 			settingsJSON, _ := simplejson.NewJson([]byte(json))
@@ -49,7 +47,7 @@ func TestWebexNotifier(t *testing.T) {
 			require.Nil(t, err)
 			require.Equal(t, "ops", webexNotifier.Name)
 			require.Equal(t, "webex", webexNotifier.Type)
-			require.Equal(t, "https://api.ciscospark.com/v1/messages", webexNotifier.URL)
+			require.Equal(t, "https://webexapis.com/v1/webhooks/incoming/room-id", webexNotifier.WebhookURL)
 		})
 	})
 }

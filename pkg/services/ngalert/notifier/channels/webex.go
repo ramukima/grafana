@@ -11,6 +11,7 @@ import (
 	"github.com/prometheus/alertmanager/types"
 	"github.com/prometheus/common/model"
 
+	"github.com/grafana/grafana/pkg/components/simplejson"
 	"github.com/grafana/grafana/pkg/infra/log"
 	"github.com/grafana/grafana/pkg/models"
 	ngmodels "github.com/grafana/grafana/pkg/services/ngalert/models"
@@ -21,20 +22,18 @@ import (
 // alert notifications to Webex Team Space.
 type WebexNotifier struct {
 	*Base
-	URL       string
-	RoomID    string
-	APISecret string
-	log       log.Logger
-	images    ImageStore
-	ns        notifications.WebhookSender
-	tmpl      *template.Template
+	WebhookURL string
+	Content    string
+	log        log.Logger
+	images     ImageStore
+	ns         notifications.WebhookSender
+	tmpl       *template.Template
 }
 
 type WebexConfig struct {
 	*NotificationChannelConfig
-	URL       string
-	RoomID    string
-	APISecret string
+	WebhookURL string
+	Content    string
 }
 
 func WebexFactory(fc FactoryConfig) (NotificationChannel, error) {
@@ -49,25 +48,14 @@ func WebexFactory(fc FactoryConfig) (NotificationChannel, error) {
 }
 
 func NewWebexConfig(config *NotificationChannelConfig, decryptFunc GetDecryptedValueFn) (*WebexConfig, error) {
-	webexUrl := config.Settings.Get("url").MustString()
-	if webexUrl == "" {
-		return nil, errors.New("could not find Webex URL in settings")
-	}
-
-	roomID := config.Settings.Get("room_id").MustString()
-	if roomID == "" {
-		return nil, errors.New("could not find Webex Room ID in settings")
-	}
-
-	apiSecret := decryptFunc(context.Background(), config.SecureSettings, "api_secret", config.Settings.Get("api_secret").MustString())
-	if apiSecret == "" {
-		return nil, errors.New("could not find Webex API secret in settings")
+	webhookUrl := config.Settings.Get("webhook_url").MustString()
+	if webhookUrl == "" {
+		return nil, errors.New("could not find Webex Webhook URL in settings")
 	}
 	return &WebexConfig{
 		NotificationChannelConfig: config,
-		URL:                       webexUrl,
-		RoomID:                    roomID,
-		APISecret:                 apiSecret,
+		WebhookURL:                webhookUrl,
+		Content:                   config.Settings.Get("message").MustString(`{{ template "default.message" . }}`),
 	}, nil
 }
 
@@ -81,19 +69,18 @@ func NewWebexNotifier(config *WebexConfig, images ImageStore, ns notifications.W
 			DisableResolveMessage: config.DisableResolveMessage,
 			Settings:              config.Settings,
 		}),
-		URL:       config.URL,
-		RoomID:    config.RoomID,
-		APISecret: config.APISecret,
-		log:       log.New("alerting.notifier.webex"),
-		images:    images,
-		ns:        ns,
-		tmpl:      t,
+		WebhookURL: config.WebhookURL,
+		Content:    config.Content,
+		log:        log.New("alerting.notifier.webex"),
+		images:     images,
+		ns:         ns,
+		tmpl:       t,
 	}
 }
 
 // Notify send an alert notification to Webex
 func (tn *WebexNotifier) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
-	tn.log.Debug("sending webex alert notification at url", tn.URL, "to", tn.RoomID)
+	tn.log.Debug("sending webex alert notification at url", tn.WebhookURL)
 
 	var tmplErr error
 	tmpl, _ := TmplText(ctx, tn.tmpl, as, tn.log, &tmplErr)
@@ -109,7 +96,7 @@ func (tn *WebexNotifier) Notify(ctx context.Context, as ...*types.Alert) (bool, 
 	message := fmt.Sprintf("%s%s\n\n*Message:*\n%s\n*URL:* %s\n",
 		stateEmoji,
 		tmpl(DefaultMessageTitleEmbed),
-		tmpl(`{{ template "default.message" . }}`),
+		tmpl(tn.Content),
 		path.Join(tn.tmpl.ExternalURL.String(), "/alerting/list"),
 	)
 
@@ -125,17 +112,14 @@ func (tn *WebexNotifier) Notify(ctx context.Context, as ...*types.Alert) (bool, 
 			return nil
 		}, as...)
 
-	body := map[string]interface{}{
-		"roomId":   tn.RoomID,
-		"markdown": message,
-	}
+	body := simplejson.New()
+	body.Set("markdown", message)
+
 	data, _ := json.Marshal(&body)
-	headers := map[string]string{
-		"Authorization": fmt.Sprintf("Bearer %s", tn.APISecret),
-	}
+	headers := map[string]string{}
 
 	cmd := &models.SendWebhookSync{
-		Url:         tn.URL,
+		Url:         tn.WebhookURL,
 		Body:        string(data),
 		HttpMethod:  "POST",
 		ContentType: "application/json; charset=utf-8",
