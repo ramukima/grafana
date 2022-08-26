@@ -340,6 +340,25 @@
                         "secureSettings": {}
                     },
                     {
+                        "name": "a webex receiver",
+                        "type": "webex",
+                        "isDefault": false,
+                        "sendReminder": false,
+                        "disableResolveMessage": false,
+                        "frequency": "5m",
+                        "settings": {
+                            "autoResolve": true,
+                            "url": "https://api.ciscospark.com/v1/messages",
+                            "httpMethod": "POST",
+                            "room_id": "webex_team_space_id",
+                            "severity": "critical",
+                            "uploadImage": false
+                        },
+                        "secureSettings": {
+                            "api_secret": "<api_secret>"
+                        }
+                    },
+                    {
                         "name": "a webhook receiver",
                         "type": "webhook",
                         "isDefault": false,

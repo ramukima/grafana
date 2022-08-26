@@ -864,6 +864,32 @@ func GetAvailableNotifiers() []*NotifierPlugin {
 			},
 		},
 		{
+			Type:        "webex",
+			Name:        "Cisco Webex Team Space",
+			Description: "Sends notifications to Cisco Webex Team Space using spark API",
+			Heading:     "Webex settings",
+			Info:        "Notifications can be configured for any Cisco Webex Team Room.",
+			Options: []NotifierOption{
+				{
+					Label:        "Cisco Webex API URL",
+					Element:      ElementTypeInput,
+					InputType:    InputTypeText,
+					Placeholder:  "https://webexapis.com/v1/webhooks/incoming/app-id",
+					Description:  "Cisco Webex Incoming Webhook URL. Please enter the absolute URL including room-id.",
+					PropertyName: "webhook_url",
+					Required:     true,
+				},
+				{
+					Label:        "Message Template",
+					Description:  "Message template to use",
+					Element:      ElementTypeInput,
+					InputType:    InputTypeText,
+					Placeholder:  `{{ template "default.message" . }}`,
+					PropertyName: "message",
+				},
+			},
+		},
+		{
 			Type:        "opsgenie",
 			Name:        "OpsGenie",
 			Description: "Sends notifications to OpsGenie",

@@ -792,6 +792,17 @@ settings:
   maxAlerts: '10'
 ```
 
+##### Webex
+
+```yaml
+type: webex
+settings:
+  # <string, required>
+  webhook_url: https://webexapis.com/v1/webhooks/incoming/app-id
+  # <string, optional>
+  message: xxxx
+```
+
 ##### WeCom
 
 ```yaml
@@ -1175,6 +1186,12 @@ The following sections detail the supported settings and secure settings for eac
 | httpMethod |                |
 | username   |                |
 | password   | yes            |
+
+#### Alert notification `webex`
+
+| Name        | Secure setting |
+| ----------- | -------------- |
+| webhook_url |                |
 
 #### Alert notification `googlechat`
 
