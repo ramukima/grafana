@@ -798,7 +798,7 @@ settings:
 type: webex
 settings:
   # <string, required>
-  url: https://webexapis.com/v1/webhooks/incoming/app-id
+  webhook_url: https://webexapis.com/v1/webhooks/incoming/app-id
   # <string, optional>
   message: xxxx
 ```
